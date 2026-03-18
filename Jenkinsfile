@@ -26,34 +26,34 @@ pipeline {
 
         stage('Setup Virtual Environment') {
             steps {
-                sh 'python -m venv venv'
-                sh 'venv\\Scripts\\pip install -r requirements.txt'
+                sh '''
+                    python3 -m venv venv
+                    venv/bin/pip install -r requirements.txt
+                '''
             }
         }
 
         stage('Start Selenium Grid') {
             steps {
-                sh(script: 'docker rm -f selenium-hub chrome-node-1 chrome-node-2 chrome-node-3', returnStatus: true)
+                sh 'docker rm -f selenium-hub chrome-node-1 chrome-node-2 chrome-node-3 || true'
                 sh 'docker-compose up -d'
-                sh 'ping -n 40 127.0.0.1 > nul'
+                sh 'sleep 20'
             }
         }
 
         stage('Verify Grid') {
             steps {
-                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                    sh 'curl -s http://127.0.0.1:4444/status'
-                }
+                sh 'curl -s http://127.0.0.1:4444/status || true'
             }
         }
 
         stage('Run Tests') {
             steps {
                 sh '''
-                    venv\\Scripts\\pytest -n 3 --dist=loadscope ^
-                           --alluredir=reports/allure-results ^
-                           --junitxml=reports/junit.xml ^
-                           -v
+                    venv/bin/pytest -n 3 --dist=loadscope \
+                    --alluredir=reports/allure-results \
+                    --junitxml=reports/junit.xml \
+                    -v
                 '''
             }
         }
@@ -73,8 +73,8 @@ pipeline {
     post {
 
         always {
-            sh(script: 'docker-compose down', returnStatus: true)
-            sh(script: 'docker rm -f selenium-hub chrome-node-1 chrome-node-2 chrome-node-3', returnStatus: true)
+            sh 'docker-compose down || true'
+            sh 'docker rm -f selenium-hub chrome-node-1 chrome-node-2 chrome-node-3 || true'
 
             junit testResults: 'reports/junit.xml',
                   allowEmptyResults: true

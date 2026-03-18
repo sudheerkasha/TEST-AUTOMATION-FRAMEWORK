@@ -1,0 +1,84 @@
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.Python
+
+# ── Virtual environments ──────────────────────────────────────────────────────
+venv/
+.venv/
+env/
+.env/
+ENV/
+
+# ── Environment / secrets ─────────────────────────────────────────────────────
+# .env holds real credentials — NEVER commit this
+.env
+*.env
+.env.local
+.env.*.local
+
+# ── Test reports & output ─────────────────────────────────────────────────────
+reports/
+logs/
+allure-results/
+allure-report/
+.allure/
+junit.xml
+reports/junit.xml
+reports/allure-results/
+reports/screenshots/
+reports/allure-html/
+
+# ── Screenshots ───────────────────────────────────────────────────────────────
+*.png
+*.jpg
+*.jpeg
+*.gif
+
+# ── pytest cache ──────────────────────────────────────────────────────────────
+.pytest_cache/
+.cache/
+*.pytest_cache
+
+# ── Coverage ──────────────────────────────────────────────────────────────────
+.coverage
+coverage.xml
+htmlcov/
+
+# ── IDEs ──────────────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.DS_Store
+Thumbs.db
+
+# ── Selenium / WebDriver binaries ─────────────────────────────────────────────
+chromedriver
+chromedriver.exe
+geckodriver
+geckodriver.exe
+msedgedriver
+msedgedriver.exe
+
+# ── Distribution / packaging ──────────────────────────────────────────────────
+dist/
+build/
+*.egg-info/
+*.egg
+MANIFEST
+
+# ── Jupyter (if used for analysis) ───────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb
+
+# ── Misc ──────────────────────────────────────────────────────────────────────
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo

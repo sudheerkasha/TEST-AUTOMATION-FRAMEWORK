@@ -28,7 +28,15 @@ pipeline {
             steps {
                 bat(script: 'docker rm -f selenium-hub chrome-node-1 chrome-node-2 chrome-node-3 || exit 0', returnStatus: true)
                 bat 'docker-compose up -d'
-                bat 'ping -n 40 127.0.0.1 > nul'
+                bat '''
+:loop
+curl http://127.0.0.1:4444/status | find "ready" > nul
+if %errorlevel% neq 0 (
+    echo Waiting for Grid...
+    timeout /t 5 > nul
+    goto loop
+)
+'''
             }
         }
 

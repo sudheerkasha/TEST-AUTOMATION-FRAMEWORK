@@ -19,7 +19,7 @@ pipeline {
 
         stage('Setup Virtual Environment') {
             steps {
-                bat '"C:\Users\SUDHEER\AppData\Local\Programs\Python\Python313\python.exe" -m venv venv'
+               bat "\"C:\\Users\\SUDHEER\\AppData\\Local\\Programs\\Python\\Python313\\python.exe\" -m venv venv"
                 bat 'venv\\Scripts\\pip install -r requirements.txt'
             }
         }

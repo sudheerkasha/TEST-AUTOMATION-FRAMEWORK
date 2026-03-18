@@ -7,7 +7,7 @@ pipeline {
         BROWSER         = "chrome"
         HEADLESS        = "true"
         EXECUTION_MODE  = "remote"
-        GRID_URL        = "http://selenium-hub:4444/wd/hub"
+        GRID_URL        = "http://127.0.0.1:4444/wd/hub"
         ADMIN_EMAIL     = "admin@example.com"
         ADMIN_PASSWORD  = "Admin@123"
         USER_EMAIL      = "user@example.com"
@@ -24,28 +24,36 @@ pipeline {
             }
         }
 
+        stage('Setup Virtual Environment') {
+            steps {
+                sh 'python -m venv venv'
+                sh 'venv\\Scripts\\pip install -r requirements.txt'
+            }
+        }
+
         stage('Start Selenium Grid') {
             steps {
-                sh 'docker rm -f selenium-hub chrome-node-1 chrome-node-2 chrome-node-3 || true'
-                sh 'docker compose up -d'
-                sh 'sleep 20'
+                sh(script: 'docker rm -f selenium-hub chrome-node-1 chrome-node-2 chrome-node-3', returnStatus: true)
+                sh 'docker-compose up -d'
+                sh 'ping -n 40 127.0.0.1 > nul'
             }
         }
 
         stage('Verify Grid') {
             steps {
-                sh 'curl -s http://localhost:4444/status || true'
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    sh 'curl -s http://127.0.0.1:4444/status'
+                }
             }
         }
 
         stage('Run Tests') {
             steps {
                 sh '''
-                    docker compose run tests \
-                    pytest -n 3 --dist=loadscope \
-                    --alluredir=reports/allure-results \
-                    --junitxml=reports/junit.xml \
-                    -v
+                    venv\\Scripts\\pytest -n 3 --dist=loadscope ^
+                           --alluredir=reports/allure-results ^
+                           --junitxml=reports/junit.xml ^
+                           -v
                 '''
             }
         }
@@ -65,7 +73,8 @@ pipeline {
     post {
 
         always {
-            sh 'docker compose down || true'
+            sh(script: 'docker-compose down', returnStatus: true)
+            sh(script: 'docker rm -f selenium-hub chrome-node-1 chrome-node-2 chrome-node-3', returnStatus: true)
 
             junit testResults: 'reports/junit.xml',
                   allowEmptyResults: true

@@ -26,30 +26,30 @@ pipeline {
 
         stage('Setup Virtual Environment') {
             steps {
-                sh 'python -m venv venv'
-                sh 'venv\\Scripts\\pip install -r requirements.txt'
+                bat 'python -m venv venv'
+                bat 'venv\\Scripts\\pip install -r requirements.txt'
             }
         }
 
         stage('Start Selenium Grid') {
             steps {
-                sh(script: 'docker rm -f selenium-hub chrome-node-1 chrome-node-2 chrome-node-3', returnStatus: true)
-                sh 'docker-compose up -d'
-                sh 'ping -n 40 127.0.0.1 > nul'
+                bat (script: 'docker rm -f selenium-hub chrome-node-1 chrome-node-2 chrome-node-3', returnStatus: true)
+                bat 'docker-compose up -d'
+                bat 'ping -n 40 127.0.0.1 > nul'
             }
         }
 
         stage('Verify Grid') {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                    sh 'curl -s http://127.0.0.1:4444/status'
+                    bat 'curl -s http://127.0.0.1:4444/status'
                 }
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh '''
+                bat '''
                     venv\\Scripts\\pytest -n 3 --dist=loadscope ^
                            --alluredir=reports/allure-results ^
                            --junitxml=reports/junit.xml ^

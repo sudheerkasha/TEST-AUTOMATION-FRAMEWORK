@@ -39,7 +39,7 @@ pipeline {
                 bat '''
                 docker rm -f selenium-hub chrome-node-1 chrome-node-2 chrome-node-3
                 docker-compose up -d
-                timeout /t 30
+                ping 127.0.0.1 -n 30 > nul
                 '''
             }
         }

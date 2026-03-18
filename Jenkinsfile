@@ -7,7 +7,7 @@ pipeline {
         BROWSER         = "chrome"
         HEADLESS        = "true"
         EXECUTION_MODE  = "remote"
-        GRID_URL        = "http://127.0.0.1:4444/wd/hub"
+        GRID_URL        = "http://selenium-hub:4444/wd/hub"
         ADMIN_EMAIL     = "admin@example.com"
         ADMIN_PASSWORD  = "Admin@123"
         USER_EMAIL      = "user@example.com"
@@ -24,33 +24,25 @@ pipeline {
             }
         }
 
-        stage('Setup Virtual Environment') {
-            steps {
-                sh '''
-                    python3 -m venv venv
-                    venv/bin/pip install -r requirements.txt
-                '''
-            }
-        }
-
         stage('Start Selenium Grid') {
             steps {
                 sh 'docker rm -f selenium-hub chrome-node-1 chrome-node-2 chrome-node-3 || true'
-                sh 'docker-compose up -d'
+                sh 'docker compose up -d'
                 sh 'sleep 20'
             }
         }
 
         stage('Verify Grid') {
             steps {
-                sh 'curl -s http://127.0.0.1:4444/status || true'
+                sh 'curl -s http://localhost:4444/status || true'
             }
         }
 
         stage('Run Tests') {
             steps {
                 sh '''
-                    venv/bin/pytest -n 3 --dist=loadscope \
+                    docker compose run tests \
+                    pytest -n 3 --dist=loadscope \
                     --alluredir=reports/allure-results \
                     --junitxml=reports/junit.xml \
                     -v
@@ -73,8 +65,7 @@ pipeline {
     post {
 
         always {
-            sh 'docker-compose down || true'
-            sh 'docker rm -f selenium-hub chrome-node-1 chrome-node-2 chrome-node-3 || true'
+            sh 'docker compose down || true'
 
             junit testResults: 'reports/junit.xml',
                   allowEmptyResults: true

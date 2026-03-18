@@ -93,7 +93,6 @@ if %errorlevel% neq 0 (
 
         failure {
             echo 'Tests failed. Check Allure report and screenshots.'
-        ])
     }
 }
         }

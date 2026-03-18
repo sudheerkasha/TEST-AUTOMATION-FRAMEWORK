@@ -17,37 +17,25 @@ pipeline {
 
     stages {
 
-        stage('Checkout') {
-            steps {
-                git branch: 'main',
-                    url: 'https://github.com/sudheerkasha/TEST-AUTOMATION-FRAMEWORK.git'
-            }
-        }
-
         stage('Setup Virtual Environment') {
             steps {
-                bat '''
-                python -m venv venv
-                venv\\Scripts\\python -m pip install --upgrade pip
-                venv\\Scripts\\pip install -r requirements.txt
-                '''
+                bat '"C:\Users\SUDHEER\AppData\Local\Programs\Python\Python313\python.exe" -m venv venv'
+                bat 'venv\\Scripts\\pip install -r requirements.txt'
             }
         }
 
         stage('Start Selenium Grid') {
             steps {
-                bat '''
-                docker rm -f selenium-hub chrome-node-1 chrome-node-2 chrome-node-3
-                docker-compose up -d
-                ping 127.0.0.1 -n 30 > nul
-                '''
+                bat(script: 'docker rm -f selenium-hub chrome-node-1 chrome-node-2 chrome-node-3 || exit 0', returnStatus: true)
+                bat 'docker-compose up -d'
+                bat 'ping -n 40 127.0.0.1 > nul'
             }
         }
 
         stage('Verify Grid') {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                    bat 'curl http://127.0.0.1:4444/status'
+                    bat 'curl -s http://127.0.0.1:4444/status'
                 }
             }
         }
@@ -55,10 +43,10 @@ pipeline {
         stage('Run Tests') {
             steps {
                 bat '''
-                venv\\Scripts\\pytest -n 3 --dist=loadscope ^
-                --alluredir=reports\\allure-results ^
-                --junitxml=reports\\junit.xml ^
-                -v
+                    venv\\Scripts\\pytest -n 3 --dist=loadscope ^
+                           --alluredir=reports/allure-results ^
+                           --junitxml=reports/junit.xml ^
+                           -v
                 '''
             }
         }
@@ -78,10 +66,8 @@ pipeline {
     post {
 
         always {
-
-            // 
-            bat 'docker-compose down'
-            bat 'docker rm -f selenium-hub chrome-node-1 chrome-node-2 chrome-node-3'
+            bat(script: 'docker-compose down', returnStatus: true)
+            bat(script: 'docker rm -f selenium-hub chrome-node-1 chrome-node-2 chrome-node-3 || exit 0', returnStatus: true)
 
             junit testResults: 'reports/junit.xml',
                   allowEmptyResults: true

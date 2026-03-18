@@ -93,6 +93,18 @@ if %errorlevel% neq 0 (
 
         failure {
             echo 'Tests failed. Check Allure report and screenshots.'
+            stage('Generate Allure Report') {
+    steps {
+        bat 'dir reports\\allure-results'
+
+        allure([
+            includeProperties: false,
+            jdk: '',
+            reportBuildPolicy: 'ALWAYS',
+            results: [[path: 'reports\\allure-results']]
+        ])
+    }
+}
         }
     }
 }
